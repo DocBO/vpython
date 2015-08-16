@@ -1,0 +1,111 @@
+The purpose of this file is to fully document the installation
+procedure for VPython from source on Linux. Specific installers
+for Windows and Mac are available at vpython.org. 
+
+Windows and Mac builds are now special to them; 
+see VCBuild/VCBuild.txt and MAC-OSX.txt.
+
+Table of Contents:
+I:   Prerequisites
+II:   Troubleshooting
+
+I.  Prerequisites:
+	Most or all of these may be provided by your operating system 
+	distributor.  In every case, you must have the "developer" version
+	of the packages to ensure that the required header files are 
+	available.
+	
+	GNU g++ version 3.2.x or >= 3.3.1 (3.4.6 reccomended) (gcc.gnu.org).
+	An implementation of OpenGL.
+	The Boost C++ libraries
+		
+	Need Python 2.7.x (www.python.org), including
+		the development (dev) package.
+		
+	From a fresh Ubuntu 12.04 this gets needed prerequisites:
+
+	sudo apt-get update
+	sudo apt-get install git
+	sudo apt-get install libgtk2.0-dev
+	sudo apt-get install libgtkglextmm-x11-1.2-dev
+	sudo apt-get install libgtkmm-2.4-dev
+	sudo apt-get install python-dev
+	sudo apt-get install python-setuptools
+	sudo apt-get install python-numpy
+	sudo apt-get install libboost-python-dev
+	sudo apt-get install libboost-signals-dev
+	sudo apt-get install tk
+
+	(There is a helper script in src/gtk2 called apt-get-packages:
+
+	sudo sh -v src/gtk2/apt-get-packages.sh
+
+	that may be convenient for this)
+
+	From https://groups.google.com/forum/?fromgroups=&hl=en#!topic/wxpython-users/XWyd995Ci_Q
+	comes this advice by Patrick Korsnick on how to get prerequisites needed to build wxPython:
+	
+	opensuse 12.2:
+	sudo zypper in gtk2-devel freeglut-devel gstreamer-0_10-devel gstreamer-0_10-plugins-base-devel python-devel
+
+	Fedora 17:
+	sudo yum install gtk2-devel freeglut-devel gstreamer-plugins-base-devel python-devel
+
+	Ubuntu 12.04 LTS:
+	sudo apt-get install g++ libgtk2.0-dev freeglut3-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev python-dev
+	
+	-----------------------------------------------------------	
+	BUILD wxPython
+	
+	Currently one needs version 3, at http://www.wxpython.org/download.php
+
+    At the conclusion of the build you will see something like the following (discussed later):
+     To use wxPython you may need to execute these statements:
+       export PYTHONPATH="/home/bruce/Downloads/wxPython-src-X.Y.Z/wxPython"
+       export LD_LIBRARY_PATH="/home/bruce/Downloads/wxPython-src-X.Y.Z/bld/lib"
+	Make a note of what X.Y.Z is.
+	   
+	--------------------------------------------------------------
+	
+	BUILD VPython
+
+	Now you are ready to build VPython. In the VPython repository directory execute
+	sudo python2.7 setup.py install
+	
+	(You'll need Python modules Polygon, FontTools, and ttfquery, from pypi.python.org.
+	The setup.py script will attempt to build/install these if they are not
+	present, but sometimes it can't find them. If that happens, download the
+	source for each module, unpack and in a terminal cd to the module folder.
+	Execute "sudo python2.7 setup.py install" to build and install the module.)
+	
+	-----------------------------------------------------------------
+	
+	CREATE VIDLE EDITOR SHORTCUT
+
+	Create a file "vidle.sh" containing three statements like the following
+	(see the final output of building wxPython), execute "chmod a=rwx vidle.sh" to make
+	the file executable, then doubleclick the file to start the VIDLE editor:
+
+	export PYTHONPATH="/home/bruce/Downloads/wxPython-src-X.Y.Z/wxPython"
+	export LD_LIBRARY_PATH="/home/bruce/Downloads/wxPython-src-X.Y.Z/bld/lib"
+	python2.7 /usr/local/lib/python2.7/dist-packages/VPython-6.X-py2.7-linux-x86_64.egg/vidle/idle.py
+
+	Alternatively you could place the export statements in your .profile or .bashrc files
+	in which case you wouldn't need them in vidle.sh.
+
+	Another option is this: After building wxPython, repeat the operation with install:
+	sudo python2.7 build-wxpython.py --build_dir=../bld --install
+
+	This will place wxPython files into /usr/local/lib/dist-packages, which is on the
+	Python module search path, and additional files in /usr/local/lib, which is not.
+	Change the contents of vidle.sh to the following:
+
+	export LD_LIBRARY_PATH="/usr/local/lib"
+	python2.7 /usr/local/lib/python2.7/dist-packages/VPython-6.X-py2.7-linux-x86_64.egg/vidle/idle.py
+
+
+II:   Troubleshooting
+
+	From a typescript, the following will print all VPYTHON_NOTEs:
+	env VPYTHON_DEBUG=1 python test.py
+

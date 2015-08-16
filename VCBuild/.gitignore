@@ -1,0 +1,13 @@
+cvisual/*.*
+libs/*.*
+/libs/
+*.ncb
+*.suo
+*.sln
+*.htm
+*.idb
+*.pdb
+*.lib
+*.exp
+*.dep
+*.manifest

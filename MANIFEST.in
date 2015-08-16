@@ -1,0 +1,16 @@
+include README.md
+include setup.py
+include distribute_setup.py
+include site-packages/*.py
+include site-packages/*.txt
+include site-packages/*.def
+include site-packages/*.tga
+include site-packages/*.icns
+include site-packages/*.pdf
+include site-packages/*.html
+include site-packages/*.css
+include site-packages/*.gif
+include site-packages/*.js
+include site-packages/*.jpg
+include src/*.cpp
+include include/*.hpp

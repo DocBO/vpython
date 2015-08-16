@@ -1,0 +1,183 @@
+Building vpython with Visual Studio C++ 
+
+	You may find Eclipse a useful development environment (eclipse.org)		
+	
+	VPython Github repository
+	    Check-out the vpython-wx module from
+		github.com/BruceSherwood/vpython-wx
+
+	PythonX.N
+		Install Python X.N via the Windows Installer at http://www.python.org/download/.
+		Make sure it is installed on the main drive, in \PythonXN.
+		
+	Install these Python modules: numpy, FontTools, ttfquery, wxPython.
+    A 64-bit binary for numpy is available at http://www.lfd.uci.edu/~gohlke/pythonlibs.
+	
+	Copy into C:\PythonXN\Lib\site-packages the folders site-packages\vis, site-packages\visual,
+	and site-packages\visual_common.
+        
+    It is important to use the older 2008 version of Visual C++, because that's what built Python 2.7.
+    The Python shell shows the compiler version number v.1500, which is Visual Studio 2008.
+    However, see the following for how to try to use Visual C++ 2010 with Python 2.7:
+    	http://nukeit.org/compile-python-2-7-packages-with-visual-studio-2010-express
+	Also, make sure that in the Visual Studio 2010 project properties, Linker > Input,
+	you specify "Ignore Specific Default Libraries" to /NODEFAULTLIB:MSVCRT.lib.
+	To avoid the link error Error 1 error LNK1220: '/DELAYSIGN' requires '/KEYFILE' or '/KEYCONTAINER'
+	you need to go to Visual Studio project properties, Linker > Advanced, and clear Delay Sign.
+                
+    Install Visual Studio C++ 2008 Express Edition, from
+
+        http://go.microsoft.com/?linkid=7729279
+        
+    (Python 3.4 was compiled using VS 2010, available at http://www.visualstudio.com/downloads/download-visual-studio-vs#DownloadFamilies_4)
+
+    Run the downloaded file to install Visual Studio.
+    
+    Install Windows SDK for Windows 7 and .NET Framework 3.5 SP1 (ISO), from either:
+
+        http://www.microsoft.com/en-us/download/details.aspx?id=18950
+    
+    (ISO format) Download the ISO disk image and write it to a DVD.
+    Run from the DVD to install.
+
+    OR from: 
+
+        http://www.microsoft.com/en-us/download/details.aspx?id=3138
+
+    just download and install.
+
+    Either way, you need to configure Visual Studio 2008 to use this SDK, following the instructions at
+
+        http://blogs.msdn.com/b/windowssdk/archive/2009/08/07/using-the-win-7-sdk-build-environment-with-vs-2008.aspx
+        
+        Here is the main information from this link:
+        Use the Windows SDK Configuration Tool to set the Windows 7 SDK as the “current” SDK for MSBuild and VCBuild.
+        This will update the Windows 7 SDK build environment and the Visual Studio 2008 IDE build environment to use 
+        the Windows 7 SDK headers, libraries and tools. You can also use this tool to switch it back again.
+        To run the GUI version of the Windows SDK Configuration Tool, go to Start, All Programs, 
+        Microsoft Windows SDK v7.0, Visual Studio Registration, Windows SDK Configuration Tool.
+    
+    Next read the following detailed instructions on how to get Visual Studio 2008 to do 64-bit compiles:    
+        http://jenshuebel.wordpress.com/2009/02/12/visual-c-2008-express-edition-and-64-bit-targets/
+    I found it sufficient to run the program provided in this article by Xia to update the registry:
+	http://www.cppblog.com/Files/xcpp/VCE64BIT_WIN7SDK.zip
+		Read Xia's readme file for information about this.
+		Be sure to inspect the output in the shell window, and do any operations by hand that fail there.
+    
+    At Tools->Options->Projects and Solutions->VC++ Directories you can see what resources
+    are invoked for Platform x64. You should see $(VCInstallDir)bin, where $(VCInstallDir)
+    represents C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC.
+    In this VC folder there is a major error in the file vcvarsall.bat that affects
+    building Boost from source. The following lines
+        :x86_amd64
+        if not exist "%~dp0bin\x86_amd64\vcvarsx86_amd64.bat" goto missing
+        call "%~dp0bin\x86_amd64\vcvarsx86_amd64.bat"
+    need to be changed to this:
+        :x86_amd64
+        if not exist "%~dp0bin\vcvarsx86_amd64.bat" goto missing
+        call "%~dp0bin\vcvarsx86_amd64.bat"
+
+    Boost libraries: There used to be 32-bit and 64-bit Windows builds of Boost at 
+	http://www.boostpro.com/download. However these are no longer being maintained, and
+	a recent attempt to use them (Aug. 2013) didn't work. See below for how to build Boost.
+
+	Build cvisual.pyd
+        32 bit: Open the VCBuild/cvisual-32bit.vcproj project file in Visual Studio Express
+        64 bit: Open the VCBuild/cvisual27.sln project file in Visual Studio Express, 
+		Make Release the active configuration, then on the Build menu choose build or rebuild visual.
+
+        The .pyd file is placed in vpython-wx\site-packages\visual_common
+        Copy this file to C:\PythonXN\Lib\site-packages\visual_common
+
+        This is the only step that needs to be repeated as you make changes to the C++ source code.
+        
+    Get Polygon module.
+    A 64-bit binary is available at http://www.lfd.uci.edu/~gohlke/pythonlibs.
+    In setup.py I tried setting withNumPy=True and defaultStyle='STYLE_NUMPY', but it won't compile.
+    In the Polygon directory execute C:\Python2N\python setup.py install
+    
+    Process MakeVPython.iss with Innosetup (innosetup.org) to build an installer:
+    1) Run compilevisual.py from the Visual source package to
+	   Python-compile all the Visual .py files (produces .pyc files).
+	2) Make sure that C:\Python2N\Lib\idlelib\config-main.def has edit startup and 
+	autosave set to 1 and that help is set for Visual before building the package.
+	3) Double-click MakeVPython.iss. 
+	4) Near the start of the file, update AppVerName if necessary.
+	5) Do Build > Compile to produce a Windows installer.
+	6) Run the installer.
+	This produces a Windows installer that can be used by an administrator to
+	install a fully-compiled Visual into a protected area that users can't write
+	to. Without this second inno setup to get the .pyc files, every user would
+	have to recompile some of the site-packages/visual/*.py files. No big deal,
+	but nicer to have these files already compiled.
+	
+	Issues with creating installers for 64-bit VPython:
+	The 32-bit and 64-bit Registry is separate.  You need to specify the correct one when trying to use it. Inno defaults to using the 32-bit one, since most applications are 32-bit.
+
+	If you are installing a 64-bit application, then you should select 64-bit install mode (see the examples). If you are installing a 32-bit application that uses 64-bit parts, then you should use the appropriate override flags or constants to tell Inno that you're trying to access the *other* Registry for the foreign parts. These are all documented in the help file.
+
+Result1 := FileExists(
+ExpandConstant('{reg:HKLM\Software\Python\PythonCore\2.7\InstallPath,}\python.exe'));
+
+It has been said that one should use the RegQuery* family of support functions instead of trying to expand a {reg:...} constant within the code section.
+
+DEBUGGING
+Go to the "System" control panel and choose advanced settings, then environment variables.
+Create a user variable "VPYTHON_DEBUG" and give it the value 1.
+
+Run the Windows command prompt, found in Accessories in the program listings, cd to a
+directory with a Python script, and execute this:
+
+C:\Python2N\python.exe sometest.py
+
+You'll get a trace of the VPYTHON_NOTE entries in the source code.
+
+BUILDING BOOST FROM SOURCE
+Download latest Boost (boost_1_43_0.zip, for example) from www.boost.org.
+Unzip into boost_1_43_0, for example.
+
+The following must be done from a Windows typescript, 
+or the Visual Studio Command Prompt, NOT from Msys.
+> cd boost_1_43_0
+
+cd to the Boost directory and execute 
+
+.\bootstrap.bat
+
+to create the b2 tool and project-config.jam.
+
+To build the Boost libraries, execute this for 64-bit Python, using Visual Studio 2008 set up for 64-bit compiles:
+
+.\b2 --toolset=msvc-9.0 address-model=64 --build-type=complete --with-signals --with-python stage
+    (Save this line, right-click in the Windows command prompt to paste.
+     Right-click the title bar for additional options.)
+
+or this for 32-bit Python:
+
+.\b2 --build-type=complete --with-python --with-signals stage
+
+"complete" means "make various variants of the libraries".
+
+It is possible that we can eliminate the need for the signals library. It is used only
+by gl_free.cpp, whose routines are called by display_kernel, displaylist (needed any more?),
+texture, and shader_program. Note that OpenGL contexts are no longer shared between
+different canvases.
+
+The files you want will be in stage/lib.
+Move the following static libraries to dependencies/boost_files/win_libs.
+
+For Python 2.x:
+libboost_python-vc90-mt-s-1_43.lib
+libboost_signals-vc90-mt-s-1_43.lib
+
+For Python 3.x:
+libboost_python3-vc90-mt-s-1_43.lib (and then change the name in win_libs to libboost_python-vc90-mt-s-1_43.lib)
+libboost_signals-vc90-mt-s-1_43.lib
+
+Also, you need to copy the directory named boost from the Boost files into dependencies\boost_files.
+
+Presumably you're using GitHub, in which case you should add a file dependencies/.gitignore containing this:
+*.*
+
+For Boost 1_42_0, in line 21 of boost\python\exception_translator.hpp you may need
+to change bind to boost::bind. 
